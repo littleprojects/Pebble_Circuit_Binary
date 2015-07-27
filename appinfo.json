@@ -1,0 +1,55 @@
+{
+    "appKeys": {
+        "KEY_DAY_END": 2,
+        "KEY_DAY_START": 1,
+        "KEY_MODE": 0,
+        "KEY_NUMBER": 3,
+        "KEY_SHOW_BAT": 6,
+        "KEY_VIBE_BT": 5,
+        "KEY_VIBE_H": 4
+    },
+    "capabilities": [
+        "configurable"
+    ],
+    "companyName": "david.lenk@live.de",
+    "longName": "circuit binary",
+    "projectType": "native",
+    "resources": {
+        "media": [
+            {
+                "file": "images/menu_Icon.png",
+                "menuIcon": true,
+                "name": "IMAGE_ICON",
+                "type": "png"
+            },
+            {
+                "file": "images/background_white_blank.png",
+                "name": "IMAGE_BACKGROUND_WB",
+                "type": "png"
+            },
+            {
+                "file": "images/background_black_blank.png",
+                "name": "IMAGE_BACKGROUND_SB",
+                "type": "png"
+            },
+            {
+                "file": "images/background5.png",
+                "name": "IMAGE_BACKGROUND_S",
+                "type": "png"
+            },
+            {
+                "file": "images/background.png",
+                "name": "IMAGE_BACKGROUND_W",
+                "type": "png"
+            }
+        ]
+    },
+    "sdkVersion": "2",
+    "shortName": "circuit binary",
+    "uuid": "4912af97-9664-425c-8cb7-2d04b40e0f8c",
+    "versionCode": 1,
+    "versionLabel": "2.0",
+    "watchapp": {
+        "watchface": true
+    }
+}
