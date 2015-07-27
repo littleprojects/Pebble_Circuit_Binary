@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Binary Circuit Configuration</title>
+  </head>
+  <body>
+    <h1>Binary Circuit Config</h1>
+    <p>Choose watchface settings</p>
+
+    <p><b>Mode:</b>
+    <select id="mode_select">
+      <option value="day">Day</option>
+      <option value="night">Night</option>
+	  <option value="auto" selected>Auto</option>
+    </select>
+    </p>
+
+    <p>
+    <button id="save_button">Save</button>
+    </p>
+
+	<p>
+	<b>Mode Day:</b> The background is black. <br><br>
+	<b>Mode Night:</b> The background is white. <br><br>
+	<b>Mode Auto:</b> The background turns at 8 clock in the morning in the day mode. From 8 clock in the evening he switches to night mode for better readability in the dark.<br><br>
+	</p>
+	
+    <script>
+      //Setup to allow easy adding more options later
+      function saveOptions() {
+        var modeSelect = document.getElementById("mode_select");
+
+        var options = {
+          "mode": modeSelect.options[modeSelect.selectedIndex].value
+        }
+        
+        return options;
+      };
+
+      var submitButton = document.getElementById("save_button");
+      submitButton.addEventListener("click", 
+        function() {
+          console.log("Submit");
+
+          var options = saveOptions();
+          var location = "pebblejs://close#" + encodeURIComponent(JSON.stringify(options));
+          
+          document.location = location;
+        }, 
+      false);
+    </script>
+  </body>
+</html>
