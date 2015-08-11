@@ -48,7 +48,7 @@ persist settings = {
 	.numbers 		= true,
 	.vibe_h			= false,
 	.vibe_bt		= false,
-	.show_bat		= false,
+	.show_bat		= true, //false,
 	.day 				= true,
 	.number_old	= true,
 	.bt_old			= true
@@ -204,11 +204,17 @@ void bt_status(GContext* ctx, bool on) {
 }
 
 void bat_status(GContext* ctx, BatteryChargeState charge_state) {
-	if(settings.show_bat){
+	if(true){  //settings.show_bat
 		//change the color
 		graphics_context_set_fill_color(ctx, settings.day ? GColorWhite : GColorBlack); //on
 	  //draw the line
-		graphics_fill_rect(ctx, GRect(0, 166, (int)(144/100*charge_state.charge_percent), 10), 1, 0);
+		
+		//float var1 = (144*charge_state.charge_percent)/100;
+		//int var = (int)var1;
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Battery Level is %d", charge_state.charge_percent);
+		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Battery Bar hav %d", var);
+		
+		graphics_fill_rect(ctx, GRect(0, 166, (int)((144*charge_state.charge_percent)/100), 10), 1, 0);
 	}
 }
 

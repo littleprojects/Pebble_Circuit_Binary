@@ -48,7 +48,7 @@
     "shortName": "circuit binary",
     "uuid": "4912af97-9664-425c-8cb7-2d04b40e0f8c",
     "versionCode": 1,
-    "versionLabel": "2.0",
+    "versionLabel": "2.1",
     "watchapp": {
         "watchface": true
     }
