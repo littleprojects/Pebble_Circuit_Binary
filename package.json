@@ -1,0 +1,90 @@
+{
+    "author": "david.lenk@live.de",
+    "dependencies": {},
+    "keywords": [],
+    "name": "circuit-binary",
+    "pebble": {
+        "capabilities": [
+            "configurable"
+        ],
+        "displayName": "circuit binary",
+        "enableMultiJS": false,
+        "messageKeys": {
+            "KEY_DAY_END": 2,
+            "KEY_DAY_START": 1,
+            "KEY_FORMAT": 7,
+            "KEY_MODE": 0,
+            "KEY_NUMBER": 3,
+            "KEY_SHOW_BAT": 6,
+            "KEY_VIBE_BT": 5,
+            "KEY_VIBE_H": 4
+        },
+        "projectType": "native",
+        "resources": {
+            "media": [
+                {
+                    "file": "images/24_wn.png",
+                    "name": "IMAGE_24_wn",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/24_wb.png",
+                    "name": "IMAGE_24_wb",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/24_bn.png",
+                    "name": "IMAGE_24_bn",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/24_bb.png",
+                    "name": "IMAGE_24_bb",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/menu_Icon.png",
+                    "menuIcon": true,
+                    "name": "IMAGE_ICON",
+                    "targetPlatforms": null,
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/background_white_blank.png",
+                    "name": "IMAGE_BACKGROUND_WB",
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/background_black_blank.png",
+                    "name": "IMAGE_BACKGROUND_SB",
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/background5.png",
+                    "name": "IMAGE_BACKGROUND_S",
+                    "type": "bitmap"
+                },
+                {
+                    "file": "images/background.png",
+                    "name": "IMAGE_BACKGROUND_W",
+                    "type": "bitmap"
+                }
+            ]
+        },
+        "sdkVersion": "3",
+        "targetPlatforms": [
+            "aplite",
+            "basalt",
+            "diorite"
+        ],
+        "uuid": "4912af97-9664-425c-8cb7-2d04b40e0f8c",
+        "watchapp": {
+            "watchface": true
+        }
+    },
+    "version": "2.22.0"
+}

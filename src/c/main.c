@@ -5,6 +5,7 @@
 // based on the PCBbinary Watchface from 8a22a https://github.com/8a22a/PCBbinary
 //
 // bachground.png IDENTIFIKATOR: IMAGE_BACKGROUND_
+// multicolor: https://developer.getpebble.com/guides/best-practices/multi-platform/
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -12,6 +13,7 @@
 #define MAINSWITCH_DAY_NIGHT_AUTO 1   //0 = OFF, 1 = ON - Swith the day and night automatik on or off
  
 #define SETTINGS_KEY 99
+#define COLORED 0
   
 #include "pebble.h"
 
@@ -30,27 +32,34 @@ typedef struct persist {
 	int Mode;
   int Day_start;
   int Day_end;
+	bool format12; 	//12 (true) or 24 (false) hour format
   bool numbers;
 	bool vibe_h;
 	bool vibe_bt;
 	bool show_bat;
+	bool show_dat;
 	
 	//remenber the old state	
 	bool day;
 	bool number_old;
+	bool format_old;
   bool bt_old;
 } __attribute__((__packed__)) persist;
 
+//default settings
 persist settings = {
   .Mode 			= 0,
   .Day_start 	= 8,
   .Day_end 		= 18,
+	.format12		= true,
 	.numbers 		= true,
 	.vibe_h			= false,
 	.vibe_bt		= false,
 	.show_bat		= true, //false,
+	.show_dat		= true,
 	.day 				= true,
 	.number_old	= true,
+	.format_old = true,
 	.bt_old			= true
 };
 
@@ -61,7 +70,8 @@ enum {
 	KEY_NUMBER		= 3,
 	KEY_VIBE_H		= 4,
 	KEY_VIBE_BT		= 5,
-	KEY_SHOW_BAT	= 6
+	KEY_SHOW_BAT	= 6,
+	KEY_FORMAT		= 7
 };
 
 //black or white
@@ -90,32 +100,56 @@ void change_background() {
     //APP_LOG(APP_LOG_LEVEL_DEBUG, "Day_start: %d", settings.Day_start);
   }
   
-  if(day != settings.day || settings.numbers != settings.number_old){ //detect a change
-    settings.day = day;    //safe the change
+  if(day != settings.day || settings.numbers != settings.number_old || settings.format_old != settings.format12){ //detect a change
+    settings.day 				= day;    //safe the change
 		settings.number_old = settings.numbers;
+		settings.format_old = settings.format12;
     
     //change the background
     //clear old
     gbitmap_destroy(background_image);
 
     //set new background
-    if(settings.day) {  //day /black
-			if(settings.number_old){
-      	background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_S);
-			}else{
-				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_SB);
+		if(settings.format12){
+			
+			//12h format
+			if(settings.day) {  //day /black
+				if(settings.number_old){
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_S);
+				}else{
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_SB);
+				}
 			}
-    }
-    else {			//night / white
-			if(settings.number_old){
-      	background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_W);
-			}else{
-				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_WB);
+			else {			//night / white
+				if(settings.number_old){
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_W);
+				}else{
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_WB);
+				}
+			}			
+		}else{
+			
+			//24h format
+			if(settings.day) {  //day /black
+				if(settings.number_old){
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_bn);
+				}else{
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_bb);
+				}
 			}
-    }  
-  
+			else {			//night / white
+				if(settings.number_old){
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_wn);
+				}else{
+					background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_wb);
+				}
+			}			
+		}
+		
+  	//update background
     bitmap_layer_set_bitmap(background_layer, background_image);
     layer_mark_dirty(bitmap_layer_get_layer(background_layer));
+		//layer_mark_dirty(led_layer);
   }  
 }
 
@@ -134,6 +168,7 @@ static void savePersistentSettings() {
 static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tuple, const Tuple* old_tuple, void* context) {
   
 	//APP_LOG(APP_LOG_LEVEL_DEBUG, "KEY: %d", (int)key);
+	bool change_bg = false;
 	
 	switch (key) {
     case KEY_MODE:
@@ -152,6 +187,7 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 		case KEY_NUMBER:
 			if(strcmp(new_tuple->value->cstring, "show") == 0){settings.numbers = true;}
 			if(strcmp(new_tuple->value->cstring, "hide") == 0){settings.numbers = false;}
+			change_bg = true;
 			//APP_LOG(APP_LOG_LEVEL_DEBUG, "show numbers: %d", settings.numbers);
 			break;
 		case KEY_VIBE_H:
@@ -163,9 +199,17 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 		case KEY_SHOW_BAT:
 			settings.show_bat = (((int)new_tuple->value->int32) == 0 ? false : true);
 			break;
+		case KEY_FORMAT:
+			settings.format12 = (((int)new_tuple->value->int32) == 0 ? false : true);
+			change_bg = true;
+			break;
+		default:		
+			break;
   }
 
-  change_background();
+	if(change_bg){
+  	change_background();
+	}
 	savePersistentSettings();
 }
 
@@ -173,15 +217,27 @@ static void sync_tuple_changed_callback(const uint32_t key, const Tuple* new_tup
 
 //draw the LEDs
 GRect getRect(int row, int led) {
-  if (row == 0)
-    return GRect(19 + led * 31, 21, 13, 13);//GRect(4 + led * 40, 21, 18, 18);
-  else
+  if (row == 0){
+		if(settings.format12){
+			//12h format
+			return GRect(19 + led * 31, 21, 13, 13);
+		}else{
+			//24h
+			return GRect(17 + led * 24, 21, 13, 13);		
+		}    
+	}else{
+		//minutes
     return GRect(14 + led * 20, 135, 10, 10);
+	}
 }
 
 //Change the LED color
 void color_led(GContext* ctx, int row, int led, bool on) {
-  graphics_context_set_fill_color(ctx, settings.day == on ? GColorWhite : GColorBlack); //on
+  #if COLORED
+		graphics_context_set_fill_color(ctx, settings.day == on ? GColorFromRGB(255, 0, 0) : GColorBlack);
+	#else
+		graphics_context_set_fill_color(ctx, settings.day == on ? GColorWhite : GColorBlack); //on
+	#endif
   graphics_fill_rect(ctx, getRect(row, led), 1, 0);
 }
 
@@ -204,17 +260,17 @@ void bt_status(GContext* ctx, bool on) {
 }
 
 void bat_status(GContext* ctx, BatteryChargeState charge_state) {
-	if(true){  //settings.show_bat
+	if(settings.show_bat){  //settings.show_bat //true
 		//change the color
 		graphics_context_set_fill_color(ctx, settings.day ? GColorWhite : GColorBlack); //on
 	  //draw the line
 		
-		//float var1 = (144*charge_state.charge_percent)/100;
-		//int var = (int)var1;
+		float var1 = (144*charge_state.charge_percent)/100;
+		int var = (int)var1;
 		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Battery Level is %d", charge_state.charge_percent);
 		//APP_LOG(APP_LOG_LEVEL_DEBUG, "Battery Bar hav %d", var);
 		
-		graphics_fill_rect(ctx, GRect(0, 166, (int)((144*charge_state.charge_percent)/100), 10), 1, 0);
+		graphics_fill_rect(ctx, GRect(0, 166, var, 10), 1, 0);
 	}
 }
 
@@ -226,15 +282,27 @@ void led_layer_update_callback(Layer *me, GContext* ctx) {
   time_t now = time(NULL);
   struct tm *t = localtime(&now);
 
-  unsigned short hour = t->tm_hour % 12;
-  hour = hour ? hour : 12; // 0 as 12
-  unsigned short min = t->tm_min;
+	unsigned short hour = t->tm_hour;	
+	unsigned short min = t->tm_min;
+	
+	if(settings.format12){
 
-	//hours
-  color_led(ctx, 0, 0, hour & 8);
-  color_led(ctx, 0, 1, hour & 4);
-  color_led(ctx, 0, 2, hour & 2);
-  color_led(ctx, 0, 3, hour & 1);
+		//12h format
+		hour = hour %12; 				//24h -> 12h format
+		hour = hour ? hour : 12; //0 as 12 
+		
+		color_led(ctx, 0, 0, hour & 8);
+		color_led(ctx, 0, 1, hour & 4);
+		color_led(ctx, 0, 2, hour & 2);
+		color_led(ctx, 0, 3, hour & 1);
+	}else{
+		//24h format
+		color_led(ctx, 0, 0, hour & 16);
+		color_led(ctx, 0, 1, hour & 8);
+		color_led(ctx, 0, 2, hour & 4);
+		color_led(ctx, 0, 3, hour & 2);
+		color_led(ctx, 0, 4, hour & 1);
+	}
 
 	//minutes
   color_led(ctx, 1, 0, min & 32);
@@ -298,23 +366,41 @@ static void do_init(void) {
   GRect frame = layer_get_frame(window_layer);
   
   //load the background
+	if(settings.format12){
 
-  
-  //set new background
-  if(settings.day) {  //day - black
-		if(settings.number_old){
-     	background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_S);
-		}else{
-			background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_SB);
+		//12h format
+		if(settings.day) {  //day /black
+			if(settings.number_old){
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_S);
+			}else{
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_SB);
+			}
 		}
-  }
-  else {			//night - white
-		if(settings.number_old){
-      background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_W);			
-		}else{
-			background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_WB);
+		else {			//night / white
+			if(settings.number_old){
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_W);
+			}else{
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_BACKGROUND_WB);
+			}
+		}			
+	}else{
+
+		//24h format
+		if(settings.day) {  //day /black
+			if(settings.number_old){
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_bn);
+			}else{
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_bb);
+			}
 		}
-  }  
+		else {			//night / white
+			if(settings.number_old){
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_wn);
+			}else{
+				background_image = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_24_wb);
+			}
+		}			
+	}
 	
   background_layer = bitmap_layer_create(layer_get_frame(window_layer));
   bitmap_layer_set_bitmap(background_layer, background_image);
@@ -327,7 +413,7 @@ static void do_init(void) {
   layer_set_update_proc(led_layer, &led_layer_update_callback);
   layer_add_child(window_layer, led_layer);
 
-	//eingangsvariablen -> nicht mehr vergessen
+	//eingangsvariablen -> nicht vergessen !!!
   Tuplet initial_values[] = {
     TupletInteger(KEY_MODE, settings.Mode),
     TupletInteger(KEY_DAY_START, settings.Day_start),
@@ -335,7 +421,8 @@ static void do_init(void) {
 		TupletInteger(KEY_NUMBER, settings.numbers),
 		TupletInteger(KEY_VIBE_H, settings.vibe_h),
 		TupletInteger(KEY_VIBE_BT, settings.vibe_bt),
-		TupletInteger(KEY_SHOW_BAT, settings.show_bat)
+		TupletInteger(KEY_SHOW_BAT, settings.show_bat),
+		TupletInteger(KEY_FORMAT, settings.format12)
   };
   
   app_sync_init(&sync, sync_buffer, sizeof(sync_buffer), initial_values, ARRAY_LENGTH(initial_values), sync_tuple_changed_callback, NULL, NULL);

@@ -7,7 +7,7 @@ Pebble.addEventListener("ready",
 Pebble.addEventListener("showConfiguration",
   function(e) {
     //Load the remote config page
-    Pebble.openURL("https://dl.dropboxusercontent.com/u/46109611/Pebble/binary_circuit/binary_config_v4.html");
+    Pebble.openURL("http://51015977.de.strato-hosting.eu/pebble/binary_circuit/binary_config_v5.html");
   }
 );
 
@@ -26,7 +26,8 @@ Pebble.addEventListener("webviewclosed",
 				"KEY_NUMBER"		: configuration.number,
 				"KEY_VIBE_H"		: configuration.vibe_h,
 				"KEY_VIBE_BT"		: configuration.vibe_bt,
-				"KEY_SHOW_BAT"	: configuration.show_bat
+				"KEY_SHOW_BAT"	: configuration.show_bat,
+				"KEY_FORMAT"		: configuration.format
       },
       function(e) {
         console.log("Sending settings data...");
